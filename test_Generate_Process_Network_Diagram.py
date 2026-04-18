@@ -1,63 +1,23 @@
 """
-Comprehensive test suite for QODE diagram generation scripts.
-
-Covers People_Diagram, Process_Diagram, and Technology_Diagram classes
-to achieve approximately 80% line coverage.
+Tests for Generate_Process_Network_Diagram.Process_Diagram.
 """
 
-import math
-import sys
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pandas as pd
 import networkx as nx
 
-# ---------------------------------------------------------------------------
-# Patch module-level side-effects before importing the source modules.
-# Each source file calls pd.read_excel at import time and imports skimage.io,
-# so we stub those out to prevent file-not-found / import errors.
-# ---------------------------------------------------------------------------
+# Patch the module-level pd.read_excel call that executes on import.
 with patch("pandas.read_excel", return_value=pd.DataFrame()):
-    from Generate_People_Diagram import People_Diagram
     from Generate_Process_Network_Diagram import Process_Diagram
-    from Generate_Technology_Diagram import Technology_Diagram
 
-import pydot  # noqa: E402  (installed as a direct dependency)
+import pydot
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Helper
 # ---------------------------------------------------------------------------
-
-def _make_people_df(rows):
-    """
-    Build a DataFrame matching the column order used by People_Diagram.create_edge().
-
-    Columns (positional):
-      0  S#
-      1  Predecessor 1 (incl. INIT)
-      2  Predecessor 2 (optional)
-      3  Predecessor 3 (optional)
-      4  Predecessor 4 (optional)
-      5  Predecessor 5 (optional)
-      6  Team / owner role
-      7  Total time taken
-      8  Manual time spent
-    """
-    cols = [
-        "S#",
-        "Predecessor 1 (incl. INIT)",
-        "Predecessor 2 (optional)",
-        "Predecessor 3 (optional)",
-        "Predecessor 4 (optional)",
-        "Predecessor 5 (optional)",
-        "Team / owner role",
-        "Total time taken",
-        "Manual time spent",
-    ]
-    return pd.DataFrame(rows, columns=cols)
-
 
 def _make_process_df(rows, node_col=None):
     """
@@ -105,67 +65,9 @@ def _make_process_df(rows, node_col=None):
     return df
 
 
-def _make_tech_df(rows):
-    """
-    Build a DataFrame matching the column order used by Technology_Diagram.create_edge().
-
-    Columns (positional):
-      0  S#
-      1  Predecessor 1 (incl. INIT)
-      2  Predecessor 2 (optional)
-      3  Predecessor 3 (optional)
-      4  Predecessor 4 (optional)
-      5  Predecessor 5 (optional)
-      6  Automation tool
-    """
-    cols = [
-        "S#",
-        "Predecessor 1 (incl. INIT)",
-        "Predecessor 2 (optional)",
-        "Predecessor 3 (optional)",
-        "Predecessor 4 (optional)",
-        "Predecessor 5 (optional)",
-        "Automation tool",
-    ]
-    return pd.DataFrame(rows, columns=cols)
-
-
 # ---------------------------------------------------------------------------
-# isnan() tests  (shared logic present in all three diagram classes)
+# isnan() tests
 # ---------------------------------------------------------------------------
-
-class TestIsNanPeople(unittest.TestCase):
-    def setUp(self):
-        People_Diagram.node_list = {}
-        People_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = People_Diagram()
-
-    def test_actual_float_nan_is_nan(self):
-        self.assertTrue(self.d.isnan(float("nan")))
-
-    def test_math_nan_is_nan(self):
-        self.assertTrue(self.d.isnan(math.nan))
-
-    def test_integer_is_not_nan(self):
-        self.assertFalse(self.d.isnan(42))
-
-    def test_zero_is_not_nan(self):
-        self.assertFalse(self.d.isnan(0))
-
-    def test_negative_float_is_not_nan(self):
-        self.assertFalse(self.d.isnan(-3.14))
-
-    def test_numeric_string_is_not_nan(self):
-        self.assertFalse(self.d.isnan("1.5"))
-
-    def test_non_numeric_string_is_not_nan(self):
-        # ValueError from float("INIT") is caught; returns False
-        self.assertFalse(self.d.isnan("INIT"))
-
-    def test_none_is_not_nan(self):
-        # TypeError from float(None) is caught; returns False
-        self.assertFalse(self.d.isnan(None))
-
 
 class TestIsNanProcess(unittest.TestCase):
     def setUp(self):
@@ -184,164 +86,8 @@ class TestIsNanProcess(unittest.TestCase):
         self.assertFalse(self.d.isnan("hello"))
 
 
-class TestIsNanTech(unittest.TestCase):
-    def setUp(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = Technology_Diagram()
-
-    def test_actual_float_nan_is_nan(self):
-        self.assertTrue(self.d.isnan(float("nan")))
-
-    def test_string_number_is_not_nan(self):
-        self.assertFalse(self.d.isnan("3"))
-
-    def test_non_numeric_string_is_not_nan(self):
-        self.assertFalse(self.d.isnan("tool"))
-
-
 # ---------------------------------------------------------------------------
-# People_Diagram tests
-# ---------------------------------------------------------------------------
-
-class TestPeopleDiagramNodeCreation(unittest.TestCase):
-    def setUp(self):
-        People_Diagram.node_list = {}
-        People_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = People_Diagram()
-
-    def test_single_role_added_to_node_list(self):
-        self.d.node_creation(["DevOps"])
-        self.assertIn("DevOps", self.d.node_list)
-
-    def test_multiple_roles_all_added(self):
-        roles = ["Dev", "QA", "PM"]
-        self.d.node_creation(roles)
-        for role in roles:
-            self.assertIn(role, self.d.node_list)
-
-    def test_node_value_is_pydot_node(self):
-        self.d.node_creation(["Dev"])
-        node_entry = self.d.node_list["Dev"]
-        self.assertIsInstance(node_entry["value"], pydot.Node)
-
-    def test_empty_roles_list_produces_empty_node_list(self):
-        self.d.node_creation([])
-        self.assertEqual(self.d.node_list, {})
-
-
-class TestPeopleDiagramEdgeCreation(unittest.TestCase):
-    def setUp(self):
-        People_Diagram.node_list = {}
-        People_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = People_Diagram()
-
-    def _make_node(self, name):
-        n = pydot.Node(name, fillcolor="#ADD8E6", style="filled")
-        n.set_shape("box")
-        return n
-
-    def test_edge_added_to_dot_graph(self):
-        n1 = self._make_node("A")
-        n2 = self._make_node("B")
-        before = len(self.d.dot_graph.get_edges())
-        self.d.edge_creation(n1, n2, "#000000")
-        after = len(self.d.dot_graph.get_edges())
-        self.assertEqual(after, before + 1)
-
-    def test_edge_with_orange_color(self):
-        n1 = self._make_node("X")
-        n2 = self._make_node("Y")
-        self.d.edge_creation(n1, n2, "#FFA500")
-        edges = self.d.dot_graph.get_edges()
-        self.assertTrue(len(edges) >= 1)
-
-
-class TestPeopleDiagramCreateEdge(unittest.TestCase):
-    def setUp(self):
-        People_Diagram.node_list = {}
-        People_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = People_Diagram()
-        # Pre-create nodes for roles "Dev" and "QA"
-        self.d.node_creation(["Dev", "QA"])
-
-    def test_no_edges_when_all_preds_are_nan(self):
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 10, 10]
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        # No predecessor -> no edge added
-        self.assertEqual(len(self.d.dot_graph.get_edges()), before)
-
-    def test_no_edge_when_pred_is_init(self):
-        rows = [
-            [1, "INIT", float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 10, 10]
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.dot_graph.get_edges()), before)
-
-    def test_edge_created_for_valid_pred1(self):
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 5, 5],
-            [2, 1, float("nan"), float("nan"), float("nan"), float("nan"), "QA", 10, 5],
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertGreater(len(self.d.dot_graph.get_edges()), before)
-
-    def test_black_edge_color_when_times_differ(self):
-        """When Total != Manual, edge should be black (#000000)."""
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 5, 5],
-            [2, 1, float("nan"), float("nan"), float("nan"), float("nan"), "QA", 10, 3],
-        ]
-        df = _make_people_df(rows)
-        self.d.create_edge(df)
-        edges = self.d.dot_graph.get_edges()
-        colors = [str(e.get_color()).strip('"') for e in edges if e.get_color() is not None]
-        self.assertIn("#000000", colors)
-
-    def test_orange_edge_color_when_times_equal(self):
-        """When Total == Manual, edge should be orange (#FFA500)."""
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 5, 5],
-            [2, 1, float("nan"), float("nan"), float("nan"), float("nan"), "QA", 5, 5],
-        ]
-        df = _make_people_df(rows)
-        self.d.create_edge(df)
-        edges = self.d.dot_graph.get_edges()
-        colors = [str(e.get_color()).strip('"') for e in edges if e.get_color() is not None]
-        self.assertIn("#FFA500", colors)
-
-    def test_multiple_predecessors_create_multiple_edges(self):
-        """A row with two valid predecessors should produce two edges."""
-        People_Diagram.node_list = {}
-        People_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d.node_creation(["Dev", "QA", "PM"])
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 5, 5],
-            [2, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "QA", 5, 5],
-            [3, 1, 2, float("nan"), float("nan"), float("nan"), "PM", 5, 5],
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.dot_graph.get_edges()), before + 2)
-
-    def test_output_writes_raw_file(self):
-        with patch.object(self.d.dot_graph, "write_raw") as mock_write:
-            self.d.output()
-            mock_write.assert_called_once_with("Diagram_People")
-
-
-# ---------------------------------------------------------------------------
-# Process_Diagram tests
+# criticality_mapping() tests
 # ---------------------------------------------------------------------------
 
 class TestProcessDiagramCriticalityMapping(unittest.TestCase):
@@ -376,6 +122,10 @@ class TestProcessDiagramCriticalityMapping(unittest.TestCase):
         self.assertEqual(self.d.criticality_mapping(""), 1)
 
 
+# ---------------------------------------------------------------------------
+# node_creation() tests
+# ---------------------------------------------------------------------------
+
 class TestProcessDiagramNodeCreation(unittest.TestCase):
     def setUp(self):
         Process_Diagram.node_list = {}
@@ -401,6 +151,10 @@ class TestProcessDiagramNodeCreation(unittest.TestCase):
         self.assertEqual(after, before + 2)
 
 
+# ---------------------------------------------------------------------------
+# edge_creation() tests
+# ---------------------------------------------------------------------------
+
 class TestProcessDiagramEdgeCreation(unittest.TestCase):
     def setUp(self):
         Process_Diagram.node_list = {}
@@ -416,6 +170,10 @@ class TestProcessDiagramEdgeCreation(unittest.TestCase):
         after = len(self.d.dot_graph.get_edges())
         self.assertEqual(after, before + 1)
 
+
+# ---------------------------------------------------------------------------
+# calculate_lead_time() tests
+# ---------------------------------------------------------------------------
 
 class TestProcessDiagramCalculateLeadTime(unittest.TestCase):
     def setUp(self):
@@ -487,6 +245,10 @@ class TestProcessDiagramCalculateLeadTime(unittest.TestCase):
         self.assertAlmostEqual(nl[1]["time"], 2.0)
 
 
+# ---------------------------------------------------------------------------
+# find_leafnodes() tests
+# ---------------------------------------------------------------------------
+
 class TestProcessDiagramFindLeafNodes(unittest.TestCase):
     def setUp(self):
         Process_Diagram.node_list = {}
@@ -521,6 +283,10 @@ class TestProcessDiagramFindLeafNodes(unittest.TestCase):
         leaves = self.d.find_leafnodes(G)
         self.assertEqual(leaves, [])
 
+
+# ---------------------------------------------------------------------------
+# new_avg_criticality() tests
+# ---------------------------------------------------------------------------
 
 class TestProcessDiagramNewAvgCriticality(unittest.TestCase):
     def setUp(self):
@@ -557,6 +323,10 @@ class TestProcessDiagramNewAvgCriticality(unittest.TestCase):
         self.assertAlmostEqual(result, 2.0)  # (3+2+1)/3
 
 
+# ---------------------------------------------------------------------------
+# node_to_edge() tests
+# ---------------------------------------------------------------------------
+
 class TestProcessDiagramNodeToEdge(unittest.TestCase):
     def setUp(self):
         Process_Diagram.node_list = {}
@@ -584,7 +354,7 @@ class TestProcessDiagramNodeToEdge(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Process_Diagram.find_critical_paths integration test
+# find_critical_paths() integration tests
 # ---------------------------------------------------------------------------
 
 class TestProcessDiagramFindCriticalPaths(unittest.TestCase):
@@ -632,268 +402,7 @@ class TestProcessDiagramFindCriticalPaths(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Technology_Diagram tests
-# ---------------------------------------------------------------------------
-
-class TestTechnologyDiagramNodeCreation(unittest.TestCase):
-    def setUp(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = Technology_Diagram()
-
-    def test_single_tool_added_to_node_list(self):
-        self.d.node_creation(["Jira"])
-        self.assertIn("Jira", self.d.node_list)
-
-    def test_multiple_tools_all_added(self):
-        tools = ["Jira", "Jenkins", "Confluence"]
-        self.d.node_creation(tools)
-        for tool in tools:
-            self.assertIn(tool, self.d.node_list)
-
-    def test_node_value_is_pydot_node(self):
-        self.d.node_creation(["Jira"])
-        self.assertIsInstance(self.d.node_list["Jira"]["value"], pydot.Node)
-
-    def test_empty_tools_list_produces_empty_node_list(self):
-        self.d.node_creation([])
-        self.assertEqual(self.d.node_list, {})
-
-    def test_nodes_added_to_dot_graph(self):
-        before = len(self.d.dot_graph.get_nodes())
-        self.d.node_creation(["ToolA", "ToolB"])
-        after = len(self.d.dot_graph.get_nodes())
-        self.assertEqual(after, before + 2)
-
-
-class TestTechnologyDiagramCheckEdgePresent(unittest.TestCase):
-    def setUp(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = Technology_Diagram()
-
-    def _make_pydot_node(self, name):
-        n = pydot.Node(name, fillcolor="#ADD8E6", style="filled")
-        return n
-
-    def test_new_edge_added_to_edge_list(self):
-        n1 = self._make_pydot_node("A")
-        n2 = self._make_pydot_node("B")
-        self.d.check_edge_present("A1", n1, n2)
-        self.assertEqual(len(self.d.edge_list), 1)
-        self.assertEqual(self.d.edge_list[0]["label"], "A1")
-
-    def test_duplicate_edge_label_appended_not_duplicated(self):
-        n1 = self._make_pydot_node("A")
-        n2 = self._make_pydot_node("B")
-        self.d.check_edge_present("A1", n1, n2)
-        self.d.check_edge_present("A2", n1, n2)
-        # Same head/tail -> should still be one entry with concatenated label
-        self.assertEqual(len(self.d.edge_list), 1)
-        self.assertIn("A2", self.d.edge_list[0]["label"])
-
-    def test_different_direction_creates_new_entry(self):
-        n1 = self._make_pydot_node("A")
-        n2 = self._make_pydot_node("B")
-        self.d.check_edge_present("A1", n1, n2)
-        # Reversed direction: head=n2, tail=n1
-        self.d.check_edge_present("A2", n2, n1)
-        self.assertEqual(len(self.d.edge_list), 2)
-
-    def test_different_tail_creates_new_entry(self):
-        n1 = self._make_pydot_node("A")
-        n2 = self._make_pydot_node("B")
-        n3 = self._make_pydot_node("C")
-        self.d.check_edge_present("A1", n1, n2)
-        self.d.check_edge_present("A2", n1, n3)
-        self.assertEqual(len(self.d.edge_list), 2)
-
-
-class TestTechnologyDiagramEdgeCreation(unittest.TestCase):
-    def setUp(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = Technology_Diagram()
-
-    def test_edge_added_to_dot_graph(self):
-        n1 = pydot.Node("ToolA")
-        n2 = pydot.Node("ToolB")
-        before = len(self.d.dot_graph.get_edges())
-        self.d.edge_creation("A1", n1, n2)
-        after = len(self.d.dot_graph.get_edges())
-        self.assertEqual(after, before + 1)
-
-
-class TestTechnologyDiagramCreateEdge(unittest.TestCase):
-    def setUp(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = Technology_Diagram()
-        self.d.node_creation(["Jira", "Jenkins"])
-
-    def test_no_edges_when_all_preds_nan(self):
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jira"]
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.edge_list), 0)
-
-    def test_no_edge_when_pred_is_init(self):
-        rows = [
-            [1, "INIT", float("nan"), float("nan"), float("nan"), float("nan"), "Jira"]
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.edge_list), 0)
-
-    def test_edge_created_for_valid_pred1(self):
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jira"],
-            [2, 1, float("nan"), float("nan"), float("nan"), float("nan"), "Jenkins"],
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.edge_list), 1)
-
-    def test_edge_label_contains_activity_number(self):
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jira"],
-            [2, 1, float("nan"), float("nan"), float("nan"), float("nan"), "Jenkins"],
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertIn("A1", self.d.edge_list[0]["label"])
-
-    def test_multiple_predecessors_two_separate_edges_or_merged(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d.node_creation(["Jira", "Jenkins", "Confluence"])
-        rows = [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jira"],
-            [2, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jenkins"],
-            [3, 1, 2, float("nan"), float("nan"), float("nan"), "Confluence"],
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        # Two distinct source tools -> two edge-list entries
-        self.assertEqual(len(self.d.edge_list), 2)
-
-    def test_output_writes_raw_file(self):
-        with patch.object(self.d.dot_graph, "write_raw") as mock_write:
-            self.d.output()
-            mock_write.assert_called_once_with("Diagram_Technology")
-
-
-# ---------------------------------------------------------------------------
-# Additional branch-coverage tests: predecessors 3-5 in People_Diagram
-# ---------------------------------------------------------------------------
-
-class TestPeopleDiagramCreateEdgeMorePreds(unittest.TestCase):
-    def setUp(self):
-        People_Diagram.node_list = {}
-        People_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = People_Diagram()
-        self.d.node_creation(["Dev", "QA", "PM", "BA", "OPS"])
-
-    def _base_rows(self):
-        """Five anchor rows (no predecessors, one per role)."""
-        return [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Dev", 5, 5],
-            [2, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "QA", 5, 5],
-            [3, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "PM", 5, 5],
-            [4, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "BA", 5, 5],
-        ]
-
-    def test_pred3_creates_edge(self):
-        rows = self._base_rows() + [
-            [5, float("nan"), float("nan"), 1, float("nan"), float("nan"), "OPS", 5, 5],
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertGreater(len(self.d.dot_graph.get_edges()), before)
-
-    def test_pred4_creates_edge(self):
-        rows = self._base_rows() + [
-            [5, float("nan"), float("nan"), float("nan"), 1, float("nan"), "OPS", 5, 5],
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertGreater(len(self.d.dot_graph.get_edges()), before)
-
-    def test_pred5_creates_edge(self):
-        rows = self._base_rows() + [
-            [5, float("nan"), float("nan"), float("nan"), float("nan"), 1, "OPS", 5, 5],
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertGreater(len(self.d.dot_graph.get_edges()), before)
-
-    def test_all_five_preds_creates_five_edges(self):
-        rows = self._base_rows() + [
-            [5, 1, 2, 3, 4, float("nan"), "OPS", 5, 5],
-        ]
-        df = _make_people_df(rows)
-        before = len(self.d.dot_graph.get_edges())
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.dot_graph.get_edges()), before + 4)
-
-
-# ---------------------------------------------------------------------------
-# Additional branch-coverage tests: predecessors 3-5 in Technology_Diagram
-# ---------------------------------------------------------------------------
-
-class TestTechnologyDiagramCreateEdgeMorePreds(unittest.TestCase):
-    def setUp(self):
-        Technology_Diagram.node_list = {}
-        Technology_Diagram.edge_list = []
-        Technology_Diagram.dot_graph = pydot.Dot(graph_type="digraph")
-        self.d = Technology_Diagram()
-        self.d.node_creation(["Jira", "Jenkins", "Confluence", "GitLab", "Sonar"])
-
-    def _anchor_rows(self):
-        return [
-            [1, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jira"],
-            [2, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Jenkins"],
-            [3, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "Confluence"],
-            [4, float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), "GitLab"],
-        ]
-
-    def test_pred3_creates_entry(self):
-        rows = self._anchor_rows() + [
-            [5, float("nan"), float("nan"), 1, float("nan"), float("nan"), "Sonar"],
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.edge_list), 1)
-
-    def test_pred4_creates_entry(self):
-        rows = self._anchor_rows() + [
-            [5, float("nan"), float("nan"), float("nan"), 1, float("nan"), "Sonar"],
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.edge_list), 1)
-
-    def test_pred5_creates_entry(self):
-        rows = self._anchor_rows() + [
-            [5, float("nan"), float("nan"), float("nan"), float("nan"), 1, "Sonar"],
-        ]
-        df = _make_tech_df(rows)
-        self.d.create_edge(df)
-        self.assertEqual(len(self.d.edge_list), 1)
-
-
-# ---------------------------------------------------------------------------
-# Additional branch-coverage tests: calculate_lead_time predecessors 2-5
+# calculate_lead_time() branch-coverage tests: predecessors 2-5
 # ---------------------------------------------------------------------------
 
 class TestProcessDiagramCalculateLeadTimeMorePreds(unittest.TestCase):
@@ -989,7 +498,7 @@ class TestProcessDiagramCalculateLeadTimeMorePreds(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# pydot_node_creation and networkX_node_creation in Process_Diagram
+# pydot_node_creation() tests
 # ---------------------------------------------------------------------------
 
 class TestProcessDiagramPydotNodeCreation(unittest.TestCase):
@@ -1024,6 +533,10 @@ class TestProcessDiagramPydotNodeCreation(unittest.TestCase):
         self.assertIsInstance(self.d.node_list[1]["value"], pydot.Node)
 
 
+# ---------------------------------------------------------------------------
+# networkX_node_creation() tests
+# ---------------------------------------------------------------------------
+
 class TestProcessDiagramNetworkXNodeCreation(unittest.TestCase):
     def setUp(self):
         Process_Diagram.node_list = {}
@@ -1055,7 +568,7 @@ class TestProcessDiagramNetworkXNodeCreation(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# pydot_edge_creation in Process_Diagram
+# pydot_edge_creation() tests
 # ---------------------------------------------------------------------------
 
 class TestProcessDiagramPydotEdgeCreation(unittest.TestCase):
@@ -1114,7 +627,7 @@ class TestProcessDiagramPydotEdgeCreation(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# networkX_edge_creation in Process_Diagram
+# networkX_edge_creation() tests
 # ---------------------------------------------------------------------------
 
 class TestProcessDiagramNetworkXEdgeCreation(unittest.TestCase):
