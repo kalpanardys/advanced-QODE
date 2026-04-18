@@ -1,0 +1,129 @@
+pip install python-docx 
+import pandas
+import networkx
+import matplotlib.pyplot
+import matplotlib.image
+from io import StringIO
+import threading
+import pydot
+import asyncio
+import time
+import math
+import sys
+import webbrowser
+import re
+import os
+import docx
+from docx import Document
+from docx.shared import RGBColor
+from docx.shared import Pt
+from datetime import date
+import openpyxl
+import json
+from openpyxl import Workbook
+from datetime import date
+import datetime
+
+from google.colab import files#excel upload
+uploaded = files.upload()
+import io
+import pandas as pd
+df = pd.read_excel(io.BytesIO(uploaded['DQODE_Report_Source_Data_Excel.xlsx']))
+df
+
+
+from google.colab import files
+uploaded = files.upload() #template upload
+
+import docx
+doc = docx.Document('TCS_TestReport_Template_with_Variable.docx')
+read = doc.paragraphs
+for i in read:
+  print(i.text)
+
+wb = openpyxl.load_workbook('DQODE_Report_Source_Data_Excel.xlsx')
+sheet = wb.active
+
+application_name = str(sheet['B2'].value)
+bank_name = 'BANK-OF-TCS'
+consultant_name = str(sheet['B3'].value)
+client_name = str(sheet['B4'].value)
+about_customer = str(sheet['B5'].value)
+problem_statement = str(sheet['B6'].value)
+month = str(sheet['B7'].value)
+as_is_roles = str([str(sheet['B8'].value)])
+process_variable1 = str(sheet['B9'].value)
+process_variable2 = str(sheet['B10'].value)
+arch_variable1 = str(sheet['B11'].value)
+arch_variable2 = str(sheet['B12'].value)
+arch_variable3 = str(sheet['B13'].value)
+arch_variable4 = str(sheet['B14'].value)
+arch_variable5 = str(sheet['B15'].value)
+arch_variable6 = str(sheet['B16'].value)
+ 
+keycomp_variable1 = str(sheet['B17'].value)
+keycomp_variable2 = str(sheet['B18'].value)
+keycomp_variable3 = str(sheet['B19'].value)
+keycomp_variable4 = str(sheet['B20'].value)
+keycomp_variable5 = str(sheet['B21'].value)
+keycomp_variable6 = str(sheet['B22'].value)
+keycomp_variable7 = str(sheet['B23'].value)
+keycomp_variable8 = str(sheet['B24'].value)
+keycomp_variable9 = str(sheet['B25'].value)
+
+improvement_variable1 = str(sheet['B26'].value)
+
+role_utilization_table = str([str('IT lead:Relatively low utilization however required for process governance'),str('Dev and Ops team:Relatively low utilization however required for process involving Dev and Ops information and activities because collaboration propensity ishigh'),
+                             str('Dev (incl. QA):Relatively high utilization'),str('DevOps Lead:Relatively average utilization'),str('Ops-Rel:Relatively average utilization'),str('Ops-Infra:Relatively low utilization, as infrastructure automation has been introduced and over head of maintenance has been reduced.'),
+                             str('QA:Relatively high utilization'),str('Architect:Relatively average utilization; essential decisions as shared service across projects'),
+                             str('Business:Relatively low utilization, however required for essential decisions on requirements for release')
+])
+
+
+
+
+
+date_today = str(date.today())
+
+replacement = {
+                '$application_name$': application_name,
+                '$consultant_name$': consultant_name,
+                '$client_name$': client_name,
+               '$bank_name$': bank_name,
+               '$about_customer$': about_customer,
+               '$months$' : month,
+               '$problem_statement$': problem_statement,
+               '$process_variable1$': process_variable1,
+               '$process_variable2$': process_variable2,
+               '$role_utilization_table$': role_utilization_table,
+               '$role_utilization_table2$': role_utilization_table,
+                '$arch_variable1$': arch_variable1,
+                '$arch_variable2$': arch_variable2,
+                '$arch_variable3$': arch_variable3,
+                '$arch_variable4$': arch_variable4,
+                '$arch_variable5$': arch_variable5,
+                '$arch_variable6$': arch_variable6,
+                '$keycomp_variable1$': keycomp_variable1,
+                '$keycomp_variable2$': keycomp_variable2,
+                '$keycomp_variable3$': keycomp_variable3,
+                '$keycomp_variable4$': keycomp_variable4,
+                '$keycomp_variable5$': keycomp_variable5,
+                '$keycomp_variable6$': keycomp_variable6,
+                '$keycomp_variable7$': keycomp_variable7,
+                '$keycomp_variable8$': keycomp_variable8,
+                '$keycomp_variable9$': keycomp_variable9,
+               
+               '$improvement_variable1$': improvement_variable1,
+               '$role_array$': as_is_roles,
+                '$date$': date_today,
+}
+json.dump(replacement, sys.stdout, indent=3)
+
+
+
+for i in read:
+  # print(i.text)
+  for j in replacement:
+    # print(i.text)
+    i.text = i.text.replace(j, replacement[j])
+    doc.save("test_doc_updated.docx")

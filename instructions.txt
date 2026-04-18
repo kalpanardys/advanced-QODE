@@ -1,0 +1,35 @@
+# DQODE
+Input file will be "QODE-Questionnaire.xlsm"
+
+Execute program with following commands
+
+## SETUP FIRST TIME
+
+Create virtual environment executing following command 
+`python -m venv .\venv`
+
+Activate virtual environment
+`.\venv\Scripts\activate.bat`
+
+Install required python packages executing command
+`pip install -r requirement.txt`
+
+Generate process network diagram executing following command
+`python Generate_Process_Network_Diagram.py`
+
+It will create a process network diagram in a file named: Diagram_Network
+
+Generate people diagram executing following command
+`python Generate_People_Diagram.py`
+
+It will create a people diagram in a file named: Diagram_People
+
+Generate technology diagram executing following command
+`python Generate_Technology_Diagram.py`
+
+It will create a technology diagram in a file named: Diagram_Technology
+
+Copy the content and paste it is Graphviz online visualizer which is available in the following path
+https://dreampuf.github.io/GraphvizOnline/
+
+
