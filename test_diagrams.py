@@ -2,7 +2,7 @@
 Comprehensive test suite for QODE diagram generation scripts.
 
 Covers People_Diagram, Process_Diagram, and Technology_Diagram classes
-to achieve approximately 80 % line coverage.
+to achieve approximately 80% line coverage.
 """
 
 import math
@@ -970,10 +970,8 @@ class TestProcessDiagramCalculateLeadTimeMorePreds(unittest.TestCase):
         self.assertAlmostEqual(nl[3]["time"], 5.0)
 
     def test_maximum_time_wins_over_multiple_preds(self):
-        """When a node has two predecessors the larger accumulated time is kept.
-        Note: calculate_lead_time runs two passes, so node2 time is updated to
-        3+8=11 in pass 2 before node3 is re-evaluated (11+1=12 -> 12 after pass 2).
-        """
+        """When a node has two predecessors, its accumulated time is at least
+        the sum of its own time and the maximum predecessor time."""
         rows = [
             self._row(1, 2.0, "INIT"),
             self._row(2, 8.0, "INIT"),
@@ -986,7 +984,7 @@ class TestProcessDiagramCalculateLeadTimeMorePreds(unittest.TestCase):
             3: {"value": None, "time": 0.0, "node_no": "E3"},
         }
         self.d.calculate_lead_time(df, nl)
-        # After both passes, node 3 time must be >= initial max(1+2, 1+8)=9
+        # node 3 receives time from both predecessors; final value >= max(1+2, 1+8)=9
         self.assertGreaterEqual(nl[3]["time"], 9.0)
 
 
