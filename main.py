@@ -3,7 +3,7 @@
 Example usage of the new diagram builders.
 """
 
-from diagram_builders import PeopleDiagramBuilder, TechnologyDiagramBuilder, ProcessNetworkDiagramBuilder
+from diagram_generator import PeopleDiagramBuilder, TechnologyDiagramBuilder, ProcessNetworkDiagramBuilder
 import sys
 
 def main():
@@ -13,7 +13,7 @@ def main():
         mode = sys.argv[1].lower()
     
     print("=" * 60)
-    print("QODE Diagram Builders - Example Usage")
+    print("QODE Diagram Builders")
     print("=" * 60)
     
     valid_modes = ["all", "people", "technology", "process"]
