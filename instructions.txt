@@ -1,35 +1,104 @@
-# DQODE
-Input file will be "QODE-Questionnaire.xlsm"
+# DQODE - Diagram Generation Tool
 
-Execute program with following commands
+This project generates People, Technology, and Process diagrams from an Excel input file.
 
-## SETUP FIRST TIME
+--------------------------------------------------
+📌 INPUT FILE
+--------------------------------------------------
 
-Create virtual environment executing following command 
-`python -m venv .\venv`
+Place your input Excel file in the project directory:
 
-Activate virtual environment
-`.\venv\Scripts\activate.bat`
+sample_questions.xlsm
 
-Install required python packages executing command
-`pip install -r requirement.txt`
+(Sheet name should be: Q_Stories)
 
-Generate process network diagram executing following command
-`python Generate_Process_Network_Diagram.py`
+--------------------------------------------------
+⚙️ SETUP (FIRST TIME ONLY)
+--------------------------------------------------
 
-It will create a process network diagram in a file named: Diagram_Network
+1. Create virtual environment:
 
-Generate people diagram executing following command
-`python Generate_People_Diagram.py`
+    python -m venv venv
 
-It will create a people diagram in a file named: Diagram_People
+2. Activate virtual environment:
 
-Generate technology diagram executing following command
-`python Generate_Technology_Diagram.py`
+    Windows:
+    venv\Scripts\activate
 
-It will create a technology diagram in a file named: Diagram_Technology
+3. Install dependencies:
 
-Copy the content and paste it is Graphviz online visualizer which is available in the following path
-https://dreampuf.github.io/GraphvizOnline/
+    pip install -r requirements.txt
 
+--------------------------------------------------
+▶️ EXECUTION
+--------------------------------------------------
 
+Run the main program:
+
+    python main.py
+
+This will generate all diagrams:
+- People Diagram
+- Technology Diagram
+- Process Network Diagram
+
+--------------------------------------------------
+🎯 OPTIONAL: RUN SPECIFIC DIAGRAM
+
+You can run specific diagram types using arguments:
+
+    python main.py people
+    python main.py technology
+    python main.py process
+    python main.py all
+
+--------------------------------------------------
+📤 OUTPUT FILES
+--------------------------------------------------
+
+The following files will be generated:
+
+- Diagram_People_New
+- Diagram_Technology_New
+- Diagram_Network_New
+
+These are Graphviz DOT format files.
+
+--------------------------------------------------
+📊 VISUALIZATION
+--------------------------------------------------
+
+To view diagrams:
+
+1. Open:
+   https://dreampuf.github.io/GraphvizOnline/
+
+2. Copy content from generated file
+
+3. Paste into the editor
+
+4. Diagram will be rendered visually
+
+--------------------------------------------------
+📦 DEPENDENCIES
+--------------------------------------------------
+
+Defined in requirements.txt:
+
+- pandas
+- networkx
+- matplotlib
+- pydot
+- scikit-image
+- openpyxl
+
+--------------------------------------------------
+🧠 NOTES
+--------------------------------------------------
+
+- Ensure Excel file format matches expected structure
+- Only rows with "Yes / No" = "Yes" are processed
+- Output files are text-based graph definitions (DOT format)
+- These can be further converted to PNG/SVG if required
+
+--------------------------------------------------

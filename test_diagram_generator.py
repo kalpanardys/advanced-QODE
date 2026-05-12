@@ -8,7 +8,7 @@ import pandas as pd
 import pydot
 import networkx as nx
 
-from diagram_builders import PeopleDiagramBuilder, TechnologyDiagramBuilder, ProcessNetworkDiagramBuilder, DotExporter
+from diagram_generator import PeopleDiagramBuilder, TechnologyDiagramBuilder, ProcessNetworkDiagramBuilder, DotExporter
 from utils import criticality_mapping, find_leaf_nodes, get_avg_criticality, node_to_edge
 
 
@@ -24,7 +24,7 @@ class TestPeopleDiagramBuilder(unittest.TestCase):
     def setUp(self):
         self.builder = PeopleDiagramBuilder()
 
-    @patch('diagram_builders.load_qode_data')
+    @patch('diagram_generator.load_qode_data')
     def test_load_data_calls_load_qode_data(self, mock_load):
         mock_df = pd.DataFrame()
         mock_load.return_value = mock_df
@@ -59,7 +59,7 @@ class TestPeopleDiagramBuilder(unittest.TestCase):
 
     def test_write_output_uses_dot_exporter(self):
         mock_dot = MagicMock()
-        with patch('diagram_builders.DotExporter') as mock_exporter_class:
+        with patch('diagram_generator.DotExporter') as mock_exporter_class:
             mock_exporter = MagicMock()
             mock_exporter_class.return_value = mock_exporter
             
