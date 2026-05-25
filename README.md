@@ -30,14 +30,35 @@ Building Next Level DevSecOps Assessment based on 9 core pillars of SDLC
 
 4. Run only a specific diagram:
    ```bash
-   python build_diagrams.py --people
-   python build_diagrams.py --technology
-   python build_diagrams.py --network
+   python build_diagrams.py --mode people
+   python build_diagrams.py --mode technology
+   python build_diagrams.py --mode process
    ```
 
 5. Use a different data file:
    ```bash
    python build_diagrams.py --data-file=my_data.xlsm
+   ```
+
+6. Run query-driven analysis and export the result:
+   ```bash
+   python build_diagrams.py --mode analyze --query "Show me the Confluence tool path" --output-file report.docx
+   python build_diagrams.py --query "Show me the Business role path" --output-file report.pdf --export-format pdf
+   ```
+
+7. Include a human-friendly narrative summary (LLM-style) in the export:
+   ```bash
+   python build_diagrams.py --mode analyze --query "Show me the Jira tool flow" --output-file result.txt --narrative
+   ```
+
+8. Show aggregated token usage from saved history:
+   ```bash
+   python build_diagrams.py --show-token-dashboard
+   ```
+
+7. View saved query history:
+   ```bash
+   python build_diagrams.py --show-history
    ```
 
 ## Output

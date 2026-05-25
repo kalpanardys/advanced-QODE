@@ -1,0 +1,43 @@
+Query
+=====
+Show me the Jira tool flow
+
+Entity matches
+==============
+Tools: Jira
+
+Results
+=======
+Tool 'Jira': 5 matching path(s).
+  Path 1: 333(Dev (incl. QA)|Jira) -> 334(QA|Jira) -> 352(Ops-Rel|XL Deploy) -> 363(Ops-Rel|XL Deploy) -> 366(Ops-Rel|XL Deploy)
+  Path 2: 333(Dev (incl. QA)|Jira) -> 334(QA|Jira) -> 354(Ops-Rel|XL Deploy) -> 364(Ops-Rel|XL Deploy) -> 368(Ops-Rel|XL Deploy)
+  Path 3: 330(ITLead|Jira) -> 332(Dev (incl. QA)|Text editor (UNIX/LINUX)) -> 333(Dev (incl. QA)|Jira) -> 334(QA|Jira) -> 347(Ops-Rel|XL Deploy)
+
+Global summary
+==============
+Total tasks: 60
+Distinct roles: 8
+Distinct tools: 14
+Distinct pillars: 4
+Longest path: INIT, 1, 2, 21, 24, 29, 34, 39, 40, 46, 279, 305, 329, 330, 332, 333, 334, 352, 363, 366
+Top roles: QA(18), Ops-Rel(14), Dev (incl. QA)(14), ITLead(8), Ops-Infra(3)
+Top tools: Confluence(11), Jira(9), XL Deploy(8), Selenium(6), Jbehave(5)
+
+Narrative
+=========
+Overview
+--------
+Total tasks: 60; Roles: 8; Tools: 14
+
+Findings
+--------
+Detected tools: Jira
+
+Tool 'Jira' — 5 matching path(s).
+  Example path 1: 333(Dev (incl. QA)|Jira) -> 334(QA|Jira) -> 352(Ops-Rel|XL Deploy) -> 363(Ops-Rel|XL Deploy) -> 366(Ops-Rel|XL Deploy)
+  Example path 2: 333(Dev (incl. QA)|Jira) -> 334(QA|Jira) -> 354(Ops-Rel|XL Deploy) -> 364(Ops-Rel|XL Deploy) -> 368(Ops-Rel|XL Deploy)
+
+Recommendations
+------------
+Consider reviewing the example paths to identify hand-off points and automation opportunities.
+

@@ -1,0 +1,16 @@
+Query
+=====
+List roles in the process
+
+Entity matches
+==============
+{}
+
+Global summary
+==============
+{'total_tasks': 60, 'roles': 8, 'tools': 14, 'pillars': 4, 'longest_path': ['INIT', '1', '2', '21', '24', '29', '34', '39', '40', '46', '279', '305', '329', '330', '332', '333', '334', '352', '363', '366'], 'top_roles': [('QA', 18), ('Ops-Rel', 14), ('Dev (incl. QA)', 14), ('ITLead', 8), ('Ops-Infra', 3)], 'top_tools': [('Confluence', 11), ('Jira', 9), ('XL Deploy', 8), ('Selenium', 6), ('Jbehave', 5)]}
+
+Fallback
+========
+No direct entity match found. Returning global summary and fallback overview.
+

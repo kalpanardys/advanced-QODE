@@ -1,0 +1,75 @@
+[
+  {
+    "timestamp": "2026-05-25T17:36:26.216407Z",
+    "query": "Show me the Confluence tool path",
+    "entities": {
+      "tools": [
+        "Confluence"
+      ]
+    },
+    "token_usage": 6,
+    "summary": "exported"
+  },
+  {
+    "timestamp": "2026-05-25T17:41:13.986359+00:00",
+    "query": "Show me the Business role path",
+    "entities": {
+      "roles": [
+        "Business"
+      ]
+    },
+    "token_usage": 6,
+    "summary": "exported"
+  },
+  {
+    "timestamp": "2026-05-25T17:52:15.324993+00:00",
+    "query": "Show me the Confluence tool path",
+    "entities": {
+      "tools": [
+        "Confluence"
+      ]
+    },
+    "token_usage": 6,
+    "summary": "exported"
+  },
+  {
+    "timestamp": "2026-05-25T17:52:17.489896+00:00",
+    "query": "List roles in the process",
+    "entities": {},
+    "token_usage": 5,
+    "summary": "exported"
+  },
+  {
+    "timestamp": "2026-05-25T17:53:27.650909+00:00",
+    "query": "Show me the Jira tool flow",
+    "entities": {
+      "tools": [
+        "Jira"
+      ]
+    },
+    "token_usage": 6,
+    "summary": "exported"
+  },
+  {
+    "timestamp": "2026-05-25T18:08:07.209019+00:00",
+    "query": "Show me the Jira tool flow",
+    "entities": {
+      "tools": [
+        "Jira"
+      ]
+    },
+    "token_usage": 6,
+    "summary": "exported"
+  },
+  {
+    "timestamp": "2026-05-25T18:23:54.116872+00:00",
+    "query": "Show me the Jira tool flow",
+    "entities": {
+      "tools": [
+        "Jira"
+      ]
+    },
+    "token_usage": 6,
+    "summary": "exported"
+  }
+]

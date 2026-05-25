@@ -40,12 +40,13 @@ def load_qode_data(file_path, sheet_name="Q_Stories", header_row=3, skip_rows=2)
     return data[data['Yes / No'] == 'Yes']
 
 
-def get_predecessors(row):
+def get_predecessors(row, include_init=False):
     """
     Extract predecessor values from a DataFrame row.
 
     Args:
         row (pd.Series): A row from the DataFrame.
+        include_init (bool): If True, include 'INIT' predecessors.
 
     Returns:
         list: List of predecessor values (S# or 'INIT'), excluding NaN.
@@ -54,7 +55,9 @@ def get_predecessors(row):
     for i in range(1, 6):  # Predecessor 1 to 5
         pred_col = f"Predecessor {i} (incl. INIT)" if i == 1 else f"Predecessor {i} (optional)"
         pred = row.get(pred_col)
-        if not isnan(pred) and pred != "INIT":
+        if not isnan(pred) and (include_init or pred != "INIT"):
+            preds.append(pred)
+        elif include_init and pred == "INIT":
             preds.append(pred)
     return preds
 
@@ -93,7 +96,7 @@ def criticality_mapping(value):
 
 def find_leaf_nodes(graph):
     """
-    Find leaf nodes in a directed graph (nodes with no descendants).
+    Find leaf nodes in a directed graph (nodes with no outgoing edges).
 
     Args:
         graph (nx.DiGraph): NetworkX directed graph.
@@ -101,16 +104,7 @@ def find_leaf_nodes(graph):
     Returns:
         list: List of leaf node names.
     """
-    leafnode = []
-    for node in graph.nodes:
-        head = []
-        if nx.descendants(graph, node) == set():
-            for ancestor in nx.ancestors(graph, node):
-                if nx.ancestors(graph, ancestor) == set():
-                    head.append(ancestor)
-        if len(head) == 1:
-            leafnode.append(node)
-    return leafnode
+    return [node for node in graph.nodes if graph.out_degree(node) == 0]
 
 
 def get_avg_criticality(graph, path):
