@@ -4,3 +4,4 @@ matplotlib
 pydot
 scikit-image
 openpyxl
+rapidfuzz

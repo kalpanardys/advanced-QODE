@@ -139,3 +139,81 @@ class CriticalPathAnalyzer(ABC):
             list: List of critical paths.
         """
         pass
+
+
+class QueryProcessorInterface(ABC):
+    """
+    Abstract base class for query entity extraction.
+    """
+
+    @abstractmethod
+    def extract_entities(self, query: str) -> dict:
+        """
+        Extract entities and intent from the query.
+
+        Args:
+            query (str): User query text.
+
+        Returns:
+            dict: Extracted entities and intent.
+        """
+        pass
+
+
+class GraphRetrieverInterface(ABC):
+    """
+    Abstract base class for graph retrieval services.
+    """
+
+    @abstractmethod
+    def traverse(self, start_entity: str, depth: int = 2) -> dict:
+        """
+        Traverse the graph from a starting entity.
+
+        Args:
+            start_entity (str): Starting node label.
+            depth (int): Maximum number of hops.
+
+        Returns:
+            dict: Traversal results with paths and metadata.
+        """
+        pass
+
+
+class FallbackRetrieverInterface(ABC):
+    """
+    Abstract base class for fallback retrieval.
+    """
+
+    @abstractmethod
+    def get_fallback(self, query: str, missing_entities: list = None) -> dict:
+        """
+        Return fallback results when graph lookup fails.
+
+        Args:
+            query (str): User query text.
+            missing_entities (list, optional): The missing entities.
+
+        Returns:
+            dict: Structured fallback result.
+        """
+        pass
+
+
+class ResponseFormatterInterface(ABC):
+    """
+    Abstract base class for formatting retrieval results.
+    """
+
+    @abstractmethod
+    def format(self, retrieval_result: dict) -> dict:
+        """
+        Convert retrieval output into structured sections.
+
+        Args:
+            retrieval_result (dict): The retrieval output.
+
+        Returns:
+            dict: Formatted response sections.
+        """
+        pass

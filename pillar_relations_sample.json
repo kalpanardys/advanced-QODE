@@ -1,0 +1,89 @@
+{
+  "Security": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Risk": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Reliability": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Performance": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Delivery": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Quality": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Compliance": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  },
+  "Governance": {
+    "processes": [
+      "Code",
+      "Test case",
+      "Release plan",
+      "IT handbook",
+      "BRS/SRS",
+      "Test script",
+      "SRS",
+      "Service request",
+      "Template",
+      "Infra as code",
+      "Checklist",
+      "Report",
+      "Design",
+      "Test result",
+      "BRS",
+      "Environment",
+      "Defect",
+      "Requirements"
+    ],
+    "roles": [
+      "Architect",
+      "QA",
+      "ITLead",
+      "Ops-Infra",
+      "DevOps lead",
+      "Ops-Rel",
+      "Dev (incl. QA)"
+    ],
+    "tools": [
+      "Flyway",
+      "Maven",
+      "Selenium",
+      "Jbehave",
+      "SonarQube",
+      "Jira",
+      "OverOps",
+      "Confluence",
+      "ServiceNow",
+      "Puppet",
+      "XL Deploy",
+      "Jmeter",
+      "Text editor (UNIX/LINUX)",
+      "GitHub / GitLab"
+    ]
+  },
+  "Cost": {
+    "processes": [],
+    "roles": [],
+    "tools": []
+  }
+}

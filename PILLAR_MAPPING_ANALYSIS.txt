@@ -1,0 +1,257 @@
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║             EXCEL WORKBOOK ANALYSIS: PILLAR MAPPING FINDINGS REPORT           ║
+║                    sample_questions.xlsm - QODE Questionnaire                 ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+EXECUTIVE SUMMARY
+═════════════════
+• Pillars are NOT stored in an explicit column
+• Pillar relevance is encoded using numeric score columns (FxW, GxW)
+• Only 2 pillar-score columns detected; 7 other pillars lack explicit score columns
+• Recommendation: Use available score columns for explicit pillar mapping; derive
+  remaining pillar relationships from text field analysis and category mappings
+
+
+FINDINGS
+════════
+
+[1] PILLAR COLUMNS IDENTIFIED
+─────────────────────────────
+
+Column Name    | Initial Letter | Candidate Pillar  | Non-Zero Rows | Mean Value | Evidence
+───────────────┼────────────────┼──────────────────┼───────────────┼────────────┼──────────────────────
+FxW            | F              | Function/Feature | 59/60         | 20.82      | High across all
+FxW^2          | F              | (squared variant)| 59/60         | 463.72     | Calculated from FxW
+GxW            | G              | Governance       | 54/60         | 14.67      | Governance-heavy rows
+GxW^2          | G              | (squared variant)| 54/60         | 313.37     | Calculated from GxW
+
+Notes:
+  • Both FxW and GxW are present in data (NOT placeholder columns)
+  • High correlation (0.88) indicates related but distinct metrics
+  • FxW > GxW consistently (ratio varies 1.15x to 1.63x by practice type)
+  • No score columns detected for: Compliance, Security, Risk, Reliability, 
+    Delivery, Performance, Quality, Cost
+
+
+[2] SCORE COLUMN PATTERNS & PILLAR HYPOTHESES
+──────────────────────────────────────────────
+
+FxW (Function/Feature Weight) Mapping
+  • Present in 59/60 rows (98%)
+  • Distributed across all practice types
+  • Highest in rows with:
+    - Practice type = "Implement" (avg 24.19)
+    - Output category = "Script" (avg 35.06)
+    - Category - Entity = "TDD/BDD", "Test script" (avg 34-39)
+  • Interpretation: FxW likely represents functional/feature implementation impact
+
+GxW (Governance Weight) Mapping
+  • Present in 54/60 rows (90%)
+  • Concentrated in governance-related rows
+  • Associated with:
+    - Rows mentioning governance-related outputs (SRS, Checklist, Design, Release plan)
+    - Governance-related roles (Architect, ITLead)
+    - Governance-related tools (Jira, Confluence, ServiceNow)
+  • Higher in "Manage", "Validate" practice types
+  • Lower in "Implement" and infrastructure rows
+  • Interpretation: GxW likely represents governance/control requirements
+
+Correlation Analysis
+  • Correlation coefficient: 0.8817 (strong positive correlation)
+  • All 54 rows with GxW > 0 also have FxW > 0
+  • 5 rows have FxW > 0 but GxW = 0 (non-governance functional tasks)
+  • This suggests: GxW ⊆ FxW (governance is a subset of functional work)
+
+
+[3] PILLAR DEFINITIONS FOUND IN WORKBOOK
+────────────────────────────────────────
+
+Location: Tables_Cat, Row 9 "Metrics" row
+
+Pillar Name    | Found In      | Evidence
+───────────────┼───────────────┼──────────────────────────────────────────────
+Governance     | Tables_Cat?   | Not explicitly listed; inferred from GxW naming
+Compliance     | Tables_Cat    | "Data integrity/ compliance metrics"
+Security       | Tables_Cat    | "Security metrics" and "Infosecurity" role
+Risk           | Not found     | No explicit mention or score column
+Reliability    | Tables_Cat    | "Reliability metrics"
+Delivery       | Not found     | No explicit mention or score column
+Performance    | Tables_Cat    | "Availability and performance" metrics
+Quality        | Tables_Cat    | "Quality metrics"
+Cost           | Not found     | No explicit mention or score column
+Function       | Not found     | Inferred from FxW column naming
+
+
+[4] RELATIONSHIPS TO WORKFLOW ENTITIES
+──────────────────────────────────────
+
+Table relationships found in Q_Stories (filtered rows):
+
+For Governance (GxW > 0 rows) - Sample:
+  Governance → Roles: ITLead, Architect, DevOps lead, Ops-Rel, QA
+  Governance → Tools: Jira, Confluence, ServiceNow, XL Deploy, Puppet
+  Governance → Processes: SRS, Checklist, Design, Baseline, Review, Release plan
+
+For Function (FxW > 0 rows) - All rows:
+  Function → Roles: All roles (comprehensive coverage)
+  Function → Tools: All tools (comprehensive coverage)
+  Function → Processes: All processes (comprehensive coverage)
+
+For Other Pillars (Compliance, Security, etc.):
+  NO EXPLICIT RELATIONSHIPS in Q_Stories data
+  Pillar names appear only in Tables_Cat "Metrics" row (not mapped to entities)
+
+
+[5] SHEET STRUCTURE ANALYSIS
+────────────────────────────
+
+Q_Stories (Primary Data Sheet)
+  ✓ Contains 60 workflow steps (filtered "Yes / No" = "Yes")
+  ✓ Has role, tool, process entities
+  ✓ Has FxW and GxW score columns
+  ✗ No explicit pillar column
+  ✗ Pillar names not mentioned in text fields for most pillars
+
+Tables_Cat (Category/Validation Tables)
+  ✓ Contains lists of valid values for roles, deliverables, metrics
+  ✓ Row 9 lists pillar names (Reliability, Quality, Security, etc.) under "Metrics"
+  ✗ Does NOT map pillars to workflows or entities
+
+Tables_TechMap (Tool Mapping Tables)
+  ✓ Maps tool categories to canonical tool names
+  ✗ No pillar information
+
+Tables_PAQ (Questions/Answers)
+  ✓ Contains business context and assessment questions
+  ✗ No pillar-to-entity mappings
+
+
+[6] RECOMMENDED APPROACH FOR PILLAR GRAPH CONSTRUCTION
+──────────────────────────────────────────────────────
+
+Three strategies identified:
+
+APPROACH A: Score Column Mapping (RECOMMENDED)
+  ├─ Use: FxW and GxW as explicit pillar indicators
+  ├─ Method:
+  │  • For rows with GxW > 0: Link to Governance
+  │  • For rows with FxW > 0 (and GxW = 0): Link to Function/Feature
+  │  • All rows linked to Function (FxW universal coverage)
+  │  • Use GxW > 0 as gate for Governance-specific relationships
+  ├─ Pros:
+  │  ✓ Objective, data-driven approach
+  │  ✓ Clear threshold (non-zero value)
+  │  ✓ No ambiguity in entity assignment
+  │  ✓ Can assign multiple pillars per row (if needed)
+  ├─ Cons:
+  │  ✗ Only covers 2 of 9 pillars (Governance, Function)
+  │  ✗ Other 7 pillars (Compliance, Security, Risk, etc.) unrepresented
+  └─ Status: IMPLEMENTABLE NOW
+
+
+APPROACH B: Text Category Mapping (PARTIAL)
+  ├─ Use: Output category, Category - Entity, Practice type for implicit pillar hints
+  ├─ Method:
+  │  • "Plan/ design/ checklist" → Governance
+  │  • "Script" + "Implement" → Function
+  │  • Category containing "Test" → Quality
+  │  • Category containing "Infra", "Environment" → Reliability
+  ├─ Pros:
+  │  ✓ Can derive multiple pillars per row
+  │  ✓ Covers more pillars than approach A
+  ├─ Cons:
+  │  ✗ Heuristic-based, prone to false positives
+  │  ✗ Requires careful rule-tuning
+  │  ✗ Not data-validated
+  └─ Status: REQUIRES MANUAL VALIDATION
+
+
+APPROACH C: Lookup Table Mapping (BLOCKED)
+  ├─ Use: Create explicit pillar-entity mappings in workbook
+  ├─ Method: Add new column to Q_Stories listing pillar(s) per row
+  ├─ Pros:
+  │  ✓ Authoritative, maintainable
+  │  ✓ Can map all 9 pillars
+  ├─ Cons:
+  │  ✗ Requires user to manually populate column
+  │  ✗ Out of scope for current analysis
+  └─ Status: REQUIRES EXTERNAL INPUT
+
+
+RECOMMENDED HYBRID APPROACH
+────────────────────────────
+1. PRIMARY: Use score columns (Approach A)
+   • Map GxW > 0 → Governance
+   • Map FxW > 0 → Function/Feature
+   • Use numeric values as relationship weights
+
+2. SECONDARY: Text heuristics (Approach B, conservative)
+   • Only apply heuristics where score columns don't cover
+   • Example: Output category "Code" + practice "Engineer" → Quality/Function
+
+3. PLACEHOLDER: Other pillars
+   • Compliance, Security, Risk, Reliability, Delivery, Performance, Quality, Cost
+   • Mark as "NOT MAPPED" in pillar graph nodes
+   • Plan for future enhancement when workbook adds score columns for these pillars
+
+
+[7] IMPLEMENTATION GUIDANCE
+──────────────────────────
+
+FOR PILLAR GRAPH CONSTRUCTION (graph_builder.py):
+
+1. Create pillar nodes for all 9 pillars
+2. Add edges based on score columns:
+   • For each row with GxW > 0:
+     - Add edges: Governance → Role, Governance → Tool, Governance → Output
+     - Edge weight = GxW value (or normalized)
+   • For each row with FxW > 0 and GxW = 0:
+     - Add edges: Function → Role, Function → Tool, Function → Output
+     - Edge weight = FxW value
+
+3. Optional: Add text-based edges for remaining pillars (if needed)
+   • Example: If Output contains "Test", link to Quality
+
+4. Validation:
+   • Governance node should have ~54 outgoing edges
+   • Function node should have ~59 outgoing edges
+   • Other pillar nodes will initially have 0 edges
+
+
+[8] ASSUMPTIONS & CAVEATS
+─────────────────────────
+
+Assumptions Made:
+  ✓ "G" in "GxW" stands for "Governance"
+  ✓ "F" in "FxW" stands for "Function" or "Feature"
+  ✓ Non-zero score values indicate entity relevance to pillar
+  ✓ The 9 pillars in entity_loader.py are the canonical list
+
+Unverified:
+  • Are other pillar-score columns supposed to exist (RxW, CxW, etc.) but missing?
+  • Is FxW meant to represent a different pillar (e.g., "Finance" → Cost)?
+  • Should rows with both FxW > 0 and GxW > 0 have edges to BOTH pillars?
+  • Are the values in Tables_Cat "Metrics" row intended as pillar definitions?
+
+Recommendations for Clarification:
+  • Confirm FxW and GxW column meanings with questionnaire owner
+  • Ask whether score columns exist for other 7 pillars (or planned)
+  • Verify whether Governance is indeed the correct interpretation for "G"
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+CONCLUSION
+══════════
+The Excel workbook uses a SCORE-COLUMN ENCODING for pillar relevance rather than
+explicit pillar columns. Two pillars (Governance via GxW, Function via FxW) have
+explicit numeric indicators. Other pillars are mentioned in metadata but NOT linked
+to workflow entities.
+
+For AQ-402 implementation:
+  PROCEED with Approach A (score columns) to build initial Pillar Graph for
+  Governance and Function pillars. Plan follow-up phases for remaining pillars
+  once workbook adds corresponding score columns or explicit mappings.
+
+═════════════════════════════════════════════════════════════════════════════════
