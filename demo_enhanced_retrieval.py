@@ -12,7 +12,7 @@ from impact_analyzer import analyze_impact
 from bottleneck_detector import detect_bottlenecks
 from graph_reasoner import rank_paths, generate_reasoning
 from entity_resolver import resolve_entity, validate_graph
-
+from export_manager import export_to_word, export_to_ppt
 
 def process_query(query, processor, retriever, fallback, formatter):
     """Process a single user query and return formatted response."""
@@ -96,22 +96,30 @@ def process_query(query, processor, retriever, fallback, formatter):
         retrieval_result = fallback.get_fallback(query, [entities.get("process")])
 
     # 4. Format response
-    print("[4] FORMATTED RESPONSE")
+    print("[4] EXECUTIVE SUMMARY")
     response = formatter.format(retrieval_result)
 
     print(f"    Summary:")
     print(f"      {response['summary']}\n")
 
     # Show top dependency paths
-    print("[4] TOP DEPENDENCY PATHS")
-    for idx, p in enumerate(retrieval_result.get("paths", []), start=1):
-        path = p.get("path") if isinstance(p, dict) else p
-        score = p.get("score") if isinstance(p, dict) else None
-        print(f"    {idx}. {' -> '.join(path)}{f' (score={score:.2f})' if score else ''}")
+    print("[5] IMPACTED ENTITIES")
+
+    impacted_nodes = set()
+
+    for p in retrieval_result.get("paths", []):
+      path = p.get("path") if isinstance(p, dict) else p
+
+      for node in path[1:]:
+        impacted_nodes.add(node)
+
+    for node in sorted(impacted_nodes):
+        print(f"    - {node}")
+
     print()
 
     # Impact analysis
-    print("[5] IMPACT ANALYSIS")
+    print("[6] IMPACT ANALYSIS")
     try:
         impact = analyze_impact(graph, retrieval_result.get("start_entity"), max_depth=4, top_paths=5)
         for level in ["high", "medium", "low"]:
@@ -124,30 +132,46 @@ def process_query(query, processor, retriever, fallback, formatter):
     except Exception as e:
         print(f"    Impact analysis failed: {e}\n")
 
-    # Bottleneck detection
-    print("[6] BOTTLENECK DETECTION")
+    # Critical Dependencies
+    print("[7] KEY DEPENDENCIES")
     try:
-        paths_for_bottleneck = [p.get("path") for p in retrieval_result.get("paths", [])]
-        bn = detect_bottlenecks(graph, paths=paths_for_bottleneck, top_n=5)
-        for b in bn.get("bottlenecks", []):
-            print(f"    - {b['node']}: score={b['score']:.3f}, degree={b['degree_centrality']:.3f}, betweenness={b['betweenness_centrality']:.3f}, freq={b['path_frequency']}")
-        print()
+      paths_for_bottleneck = [p.get("path") for p in retrieval_result.get("paths", [])]
+      bn = detect_bottlenecks(graph, paths=paths_for_bottleneck, top_n=5)
+
+      for b in bn.get("bottlenecks", []):
+        print(f"    - {b['node']}")
+
+      print()
     except Exception as e:
-        print(f"    Bottleneck detection failed: {e}\n")
+      print(f"    Dependency analysis failed: {e}\n")
 
     # Graph reasoning / recommendations
-    print("[7] GRAPH REASONING")
+    print("[8] GRAPH REASONING")
     try:
         reasoning = retrieval_result.get("reasoning") or generate_reasoning(graph, retrieval_result.get("start_entity"), retrieval_result.get("paths", []))
         print(f"    {reasoning}\n")
     except Exception as e:
         print(f"    Graph reasoning failed: {e}\n")
 
-    print("[8] RECOMMENDATIONS")
+    print("[9] RECOMMENDATIONS")
     # Use formatter recommendations + simple graph-driven recommendations
     for rec in response.get("recommendations", []):
         print(f"      • {rec}")
     print()
+
+    response["impacted_entities"] = sorted(list(impacted_nodes))
+ 
+    export_to_word(
+      query=query,
+      result=response,
+      filename="impact_report.docx"
+    )
+
+    export_to_ppt(
+      query=query,
+      result=response,
+      filename="impact_report.pptx"
+    )
 
     return response
 

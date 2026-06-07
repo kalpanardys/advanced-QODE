@@ -2,6 +2,8 @@
 Response formatter module for converting retrieval output into structured sections.
 """
 
+from unittest import result
+
 from interfaces import ResponseFormatterInterface
 
 
@@ -25,42 +27,48 @@ class ResponseFormatter(ResponseFormatterInterface):
         }
 
     def _format_graph_response(self, result: dict) -> dict:
-        start_entity = result.get("start_entity")
-        paths = result.get("paths", [])
-        related_nodes = result.get("related_nodes", [])
+         start_entity = result.get("start_entity")
+         paths = result.get("paths", [])
+         related_nodes = result.get("related_nodes", [])
 
-        summary = (
-            f"Starting from '{start_entity}', the graph retrieval engine found {len(paths)} path(s) "
-            f"and {len(related_nodes)} related node(s)."
-        )
+         summary = (
+            f"{start_entity} is a critical entity. "
+            f"Failure of {start_entity} may impact {len(related_nodes)} connected entities across the delivery lifecycle."
+         )
 
-        dependencies = []
-        for path_entry in paths:
-            dependencies.append(" -> ".join(path_entry["path"]))
+         impacted_entities = set()
 
-        if not dependencies:
-            dependencies = ["No explicit dependencies were found for the selected entity."]
+         for path_entry in paths:
+          path = path_entry.get("path", [])
+          for node in path[1:]:
+            impacted_entities.add(node)
 
-        risks = []
-        if result.get("metadata", {}).get("path_count", 0) == 0:
-            risks.append("The selected entity may be isolated or missing from the current dependency graph.")
-        else:
-            risks.append(
-                "Review dependencies on longer multi-hop paths first, as they can indicate hidden process risk and handoff complexity."
-            )
+         impacted_entities = sorted(list(impacted_entities))
 
-        recommendations = [
-            "Validate key roles and tools attached to the entity to improve process intelligence coverage.",
-            "Use multi-hop traversal to identify indirect process dependencies and potential bottlenecks.",
-        ]
+         if len(impacted_entities) >= 8:
+           risk_level = "HIGH"
+         elif len(impacted_entities) >= 4:
+          risk_level = "MEDIUM"
+         else:
+          risk_level = "LOW"
 
-        return {
-            "summary": summary,
-            "dependencies": dependencies,
-            "risks": risks,
-            "recommendations": recommendations,
-        }
+         risks = [
+           f"Business Risk Level: {risk_level}",
+           f"Failure of '{start_entity}' may impact downstream tools, roles, and processes."
+         ]
 
+         recommendations = [
+          "Review critical dependencies regularly.",
+          "Implement monitoring and alerting for key entities.",
+           "Validate upstream and downstream process relationships."
+         ]
+
+         return {
+           "summary": summary,
+           "impacted_entities": impacted_entities,
+           "risks": risks,
+           "recommendations": recommendations,
+    }
     def _format_fallback(self, result: dict) -> dict:
         summary = result.get("summary", "No fallback summary is available.")
 

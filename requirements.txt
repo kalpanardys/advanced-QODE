@@ -5,3 +5,5 @@ pydot
 scikit-image
 openpyxl
 rapidfuzz
+python-docx
+python-pptx
