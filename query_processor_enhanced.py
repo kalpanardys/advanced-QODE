@@ -67,10 +67,10 @@ class EnhancedQueryProcessor(QueryProcessorInterface):
         intent = self._extract_intent(normalized_query)
 
         return {
-            "pillar": pillar_match.title() if pillar_match else None,
-            "role": role_match.title() if role_match else None,
-            "tool": tool_match.title() if tool_match else None,
-            "process": process_match.title() if process_match else None,
+            "pillar": pillar_match,
+            "role": role_match,
+            "tool": tool_match,
+            "process": process_match,
             "intent": intent,
             "query": query,
         }
