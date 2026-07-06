@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
 from openai import OpenAI
 
 
@@ -5,10 +9,11 @@ class LLMClient:
 
     def __init__(self):
 
+        
         self.client = OpenAI(
-            api_key="s2_485ad5943af14dc4a6a663af88e4ef5e",
-            base_url="https://routellm.abacus.ai/v1"
-        )
+            api_key=os.getenv("LLM_API_KEY"),
+            base_url=os.getenv("LLM_BASE_URL")
+          )
 
     def ask(self, query, graph_data, vector_data):
 
@@ -16,8 +21,13 @@ class LLMClient:
                 You are an Enterprise Architecture,
                 DevOps and Reliability expert.
 
-                Use the supplied evidence to perform
-                dependency and impact analysis.
+                Every statement must be directly supported by either:
+                - Graph Evidence
+                - Semantic Evidence
+
+                If a statement is not supported by the supplied evidence, do not include it.
+
+                Do not infer additional business impacts beyond the retrieved evidence.
 
                 Do not use external knowledge.
 
@@ -40,14 +50,25 @@ class LLMClient:
 
             BUSINESS IMPACT
             - Maximum 5 bullet points
+            Describe what business activities could be affected.
+
+            Avoid repeating role names.
+
+            Instead explain the business consequence.
 
             RISKS
             - Maximum 5 bullet points
 
             RECOMMENDATIONS
             - Maximum 5 bullet points
+            Recommend only actions that directly address the identified dependencies or bottlenecks.
 
-            Do not provide generic explanations.
+            Do not recommend technologies or solutions that are not implied by the supplied evidence.         
+            Be specific.
+
+            Prefer evidence over general knowledge.
+
+            Every bullet should be traceable to the supplied Graph or Semantic evidence.
             Do not provide assumptions.
             Use only the supplied graph and semantic evidence.
             Keep the response under 300 words.
@@ -76,7 +97,7 @@ class LLMClient:
             """
 
         response = self.client.chat.completions.create(
-            model="o4-mini",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "user",
