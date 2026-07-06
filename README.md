@@ -1,180 +1,138 @@
-# 🧩 DQODE Diagram Generation Tool
+# 🧩 Advanced QODE
 
-A Python-based tool to generate **People**, **Technology**, and **Process Network** diagrams from structured Excel input data using Graphviz.
+Advanced QODE is an AI-assisted knowledge graph and retrieval system for exploring enterprise workflow relationships such as people, tools, roles, processes, and pillars. It combines graph-based reasoning with semantic retrieval and LLM-generated answers to help users analyze questions like “what if Jira fails?”
 
 ---
 
 ## 🚀 Overview
 
-This project reads workflow data from an Excel file and generates diagram representations in **Graphviz DOT format**.
+The project builds a structured knowledge graph from workflow data and then answers natural-language questions using:
 
-It supports:
+- Graph-based evidence extraction
+- Semantic vector retrieval
+- LLM response generation
+- Report export to Word and PowerPoint
 
-* 👥 People Interaction Diagram
-* 🛠️ Technology Interaction Diagram
-* 🔄 Process Network Diagram (with critical path analysis)
-
----
-
-## 🏗️ Architecture
-
-```
-Excel Input
-   ↓
-utils.py (data processing)
-   ↓
-diagram_generator.py (core logic)
-   ↓
-main.py (execution control)
-   ↓
-DOT Files (output)
-   ↓
-Graphviz (visualization)
-```
+The main workflow is demonstrated in [test_llm_rag.py](test_llm_rag.py).
 
 ---
 
-## 📁 Project Structure
+## ✨ Key Features
 
-```
-.
-├── main.py                        # Entry point (execution controller)
-├── diagram_generator.py          # Core logic (builders + exporter)
-├── utils.py                      # Reusable helper functions
-├── interfaces.py                 # Abstract base classes (contracts)
-├── test_diagram_generation.py    # Unit tests
-├── sample_questions.xlsm         # Input file
-├── requirements.txt              # Dependencies
-├── Diagram_*                     # Output files (generated)
-```
+- Builds role, tool, process, and pillar graphs
+- Creates a unified dependency graph
+- Retrieves relevant evidence from both graph and semantic layers
+- Generates human-readable answers through an LLM
+- Exports analysis results as Word and PowerPoint reports
 
 ---
 
-## 📌 Input File
+## 🧠 How It Works
 
-* File: `sample_questions.xlsm`
-* Sheet: `Q_Stories`
-* Only rows with `"Yes / No" = Yes` are processed
+1. The system loads structured data from the Excel-based input source.
+2. Graph builders create different relationship views.
+3. A hybrid retriever combines graph reasoning with semantic matching.
+4. The LLM receives the evidence and generates an answer.
+5. The result is exported into report files.
 
 ---
 
 ## ⚙️ Setup
 
-### 1. Create virtual environment
+### 1. Create a virtual environment
 
-```
-python -m venv venv
-```
+Windows:
 
-### 2. Activate environment
-
-**Windows:**
-
-```
-venv\Scripts\activate
+```powershell
+python -m venv dqode_env
+.\dqode_env\Scripts\activate
 ```
 
-### 3. Install dependencies
+Linux/macOS:
 
+```bash
+python3 -m venv dqode_env
+source dqode_env/bin/activate
 ```
+
+### 2. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
 ---
 
-## ▶️ Usage
+## ▶️ Run the LLM RAG Example
 
-### Run all diagrams
+Run the main example script:
 
+```bash
+python test_llm_rag.py
 ```
-python main.py
+
+When prompted, enter a question such as:
+
+```text
+what if jira fails?
 ```
+
+The script will:
+
+- detect the relevant entity
+- print graph-based evidence
+- print semantic evidence
+- generate an LLM response
+- create Word and PowerPoint reports
 
 ---
 
-### Run specific diagram
+## 📤 Output Files
 
-```
-python main.py people
-python main.py technology
-python main.py process
-```
+After running the script, the following files are generated:
 
----
-
-## 📤 Output
-
-Generated files:
-
-```
-Diagram_People_New
-Diagram_Technology_New
-Diagram_Network_New
-```
-
-These are **Graphviz DOT files**.
+- DQODE_Analysis.docx
+- DQODE_Analysis.pptx
 
 ---
 
-## 📊 Visualization
+## 📁 Project Structure
 
-To view diagrams:
-
-1. Open: https://dreampuf.github.io/GraphvizOnline/
-2. Copy content from output file
-3. Paste into the editor
-4. View rendered diagram
-
----
-
-## 🧠 Key Concepts
-
-* **Graph Builders** → Create nodes and edges from data
-* **Graph Exporter** → Saves graph in DOT format
-* **Utils** → Shared reusable logic
-* **Interfaces** → Enforce structure across components
-* **Tests** → Validate correctness
-
----
-
-## 🧪 Running Tests
-
-```
-python -m unittest test_diagram_generation.py
+```text
+.
+├── test_llm_rag.py              # Main LLM + graph + retrieval workflow
+├── graph_builder.py             # Builds graph structures
+├── hybrid_retriever.py          # Combines graph and semantic retrieval
+├── llm_client.py                # LLM interface
+├── query_processor_enhanced.py  # Entity and query processing
+├── export_report.py             # Report export logic
+├── requirements.txt             # Python dependencies
+└── sample_questions.xlsm        # Input workbook used by the workflow
 ```
 
 ---
 
 ## 📦 Dependencies
 
-* pandas
-* networkx
-* matplotlib
-* pydot
-* scikit-image
-* openpyxl
+The project uses libraries such as:
+
+- pandas
+- openpyxl
+- networkx
+- sentence-transformers or compatible embedding support
+- PyPDF or related document-processing libraries if used by the workflow
+- python-pptx and python-docx for report export
 
 ---
 
 ## 💡 Notes
 
-* Output is text-based (DOT format)
-* Can be extended to export PNG/SVG
-* Graph objects can also be used in-memory (no file required)
+- The example script is intended for demonstration and analysis workflows.
+- The output may include warnings from Excel parsing libraries when reading the workbook.
+- The quality of results depends on the available data and the configured LLM/embedding setup.
 
 ---
 
 ## 👨‍💻 Author
 
 Kalpana Reddy
-
----
-
-## 📌 Future Enhancements
-
-* Direct PNG/SVG export
-* API integration
-* Interactive UI
-* Workflow automation integration
-
----
